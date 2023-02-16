@@ -2,8 +2,14 @@ from django.db import models
 from django.utils import timezone
 from django.contrib.auth.models import User
 
+
+class PublishedManager(models.Manager):
+    def get_queryset(self):
+        return super().get_queryset().filter(status=Post.Status.PUBLISHED)
+
 # Создание модели публикации
-class Post(models.Model): 
+
+class Post(models.Model):
 
     class Status(models.TextChoices):
         DRAFT = 'ЧЕ', 'Черновик'
@@ -22,7 +28,10 @@ class Post(models.Model):
                               choices=Status.choices,
                               default=Status.DRAFT)
 
-    class Meta: # Сортировка публикаций от старых к новым
+    objects = models.Manager()
+    published = PublishedManager()
+
+    class Meta:  # Сортировка публикаций от старых к новым
         ordering = ['-publish']
         indexes = [
             models.Index(fields=['-publish'])
